@@ -1,5 +1,7 @@
 # Ramattra 桌宠 · Ramattra Desktop Pet
 
+**🌐 在线介绍页：<https://subarudesu258.github.io/ramattra-desktop-pet/>**
+
 > 一个住在你桌面上的拉玛刹。纯 `tkinter`，**零第三方运行时依赖**，双击即用。
 > 单击它会说话，双击它在 **Omnic → Nemesis → 特殊形态** 之间换装，拖到哪儿它就在哪儿待着。
 > 特殊形态肩上蹲着两只猫，戳它们会理你。
