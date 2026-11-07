@@ -26,7 +26,7 @@ from .sprites import COLOUR_KEY, SpriteLibrary
 
 log = logging.getLogger(__name__)
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 PANEL_BG = "#14101c"
 PANEL_FG = "#e6dcff"
@@ -221,6 +221,7 @@ class PetApp:
         self._fps = 6
         self._loop = True
         self._scale = 3          # sprite upscale, refreshed from the manifest
+        self.zoom = max(1, min(3, int(cfg.zoom)))
         self._hot: str | None = None
         self._last_interaction = time.monotonic()
         self._bubble = SpeechBubble(self.root)
@@ -237,7 +238,7 @@ class PetApp:
     # ------------------------------------------------------------------
     def _place_initial(self) -> None:
         self.root.update_idletasks()
-        w, h = self.lib.size(CLIPS[self.form]["idle"].name)
+        w, h = self.lib.size(CLIPS[self.form]["idle"].name, self.zoom)
         if self.cfg.x is None or self.cfg.y is None:
             box = virtual_screen() or (0, 0, self.root.winfo_screenwidth(), self.root.winfo_screenheight())
             vx, vy, vw, vh = box
@@ -273,9 +274,9 @@ class PetApp:
     # ------------------------------------------------------------------
     def _play(self, key: str, on_end=None) -> None:
         clip = CLIPS[self.form][key]
-        frames = self.lib.frames(clip.name)
-        w, h = self.lib.size(clip.name)
-        self._scale = self.lib.scale(clip.name)
+        frames = self.lib.frames(clip.name, self.zoom)
+        w, h = self.lib.size(clip.name, self.zoom)
+        self._scale = self.lib.scale(clip.name) * self.zoom
         changed_size = (w, h) != (self._w, self._h)
         self._frames, self._idx = frames, 0
         self._fps, self._loop, self._on_end = clip.fps, clip.loop, on_end
@@ -474,6 +475,9 @@ class PetApp:
                 command=lambda f=form: self.set_form(f),
             )
         menu.add_separator()
+        menu.add_command(label=f"放大（当前 {self.zoom}×）", command=lambda: self.set_zoom(self.zoom + 1))
+        menu.add_command(label=f"缩小（当前 {self.zoom}×）", command=lambda: self.set_zoom(self.zoom - 1))
+        menu.add_separator()
         menu.add_command(label="叫醒它" if self._sleeping else "让它打个盹", command=self.toggle_sleep)
         self._topmost_var = tk.BooleanVar(value=bool(self.cfg.topmost))
         menu.add_checkbutton(label="总在最前", variable=self._topmost_var, command=self._toggle_topmost)
@@ -511,6 +515,16 @@ class PetApp:
         self._play("sleep" if was_sleeping else "idle")
         if announce:
             self.say(quotes.pick(form, "transform", self.rng), 2.4)
+        self._save_quietly()
+
+    def set_zoom(self, zoom: int) -> None:
+        """1x..3x on top of the baked sprite; the choice is remembered."""
+        zoom = max(1, min(3, int(zoom)))
+        if zoom == self.zoom:
+            return
+        self.zoom = zoom
+        self.cfg.zoom = zoom
+        self._play("sleep" if self._sleeping else "idle")
         self._save_quietly()
 
     # ------------------------------------------------------------------

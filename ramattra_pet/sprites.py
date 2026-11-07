@@ -29,25 +29,40 @@ class SpriteLibrary:
     def clip_names(self) -> list[str]:
         return sorted(self.manifest)
 
-    def size(self, clip: str) -> tuple[int, int]:
+    def size(self, clip: str, zoom: int = 1) -> tuple[int, int]:
         w, h = self.manifest[clip]["size"]
-        return int(w), int(h)
+        zoom = max(1, int(zoom))
+        return int(w) * zoom, int(h) * zoom
 
     def scale(self, clip: str) -> int:
         """How much the 1:1 artwork was upscaled when it was baked."""
         return int(self.manifest[clip].get("scale", 1))
 
     # -- loading -----------------------------------------------------------
-    def frames(self, clip: str) -> list[tk.PhotoImage]:
+    def frames(self, clip: str, zoom: int = 1) -> list[tk.PhotoImage]:
+        """Frames for ``clip``, optionally zoomed by an integer factor.
+
+        Zooming reuses Tk's own integer ``PhotoImage.zoom`` so the pixels stay
+        rock solid (no interpolation), which is exactly what pixel art wants.
+        """
         if clip not in self.manifest:
             raise KeyError(f"unknown clip {clip!r}; known: {', '.join(self.clip_names())}")
-        if clip not in self._cache:
-            entry = self.manifest[clip]
-            folder = self.base / entry["dir"]
-            self._cache[clip] = [
-                tk.PhotoImage(master=self.master, file=str(folder / name)) for name in entry["frames"]
-            ]
-        return self._cache[clip]
+        zoom = max(1, int(zoom))
+        key = (clip, zoom)
+        if key not in self._cache:
+            base = self._load(clip)
+            self._cache[key] = [img.zoom(zoom) for img in base] if zoom > 1 else list(base)
+        return self._cache[key]
+
+    def _load(self, clip: str) -> list[tk.PhotoImage]:
+        cached = self._cache.get((clip, 1))
+        if cached:
+            return cached
+        entry = self.manifest[clip]
+        folder = self.base / entry["dir"]
+        frames = [tk.PhotoImage(master=self.master, file=str(folder / name)) for name in entry["frames"]]
+        self._cache[(clip, 1)] = frames
+        return frames
 
     def first(self, clip: str) -> tk.PhotoImage:
         return self.frames(clip)[0]

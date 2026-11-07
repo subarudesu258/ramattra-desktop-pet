@@ -16,7 +16,8 @@
 | **双击** | 循环切换三种形态；窗口以"脚"为锚点缩放，不会跳走 |
 | **点猫**（特殊形态） | 戳肩上的两只猫，它们会眨眼，并由它们替你回话 |
 | **拖拽** | 随意移动，自动限制在虚拟桌面范围内（多显示器也认） |
-| **右键** | 菜单：说句话 / 三种形态 / 打盹 / 总在最前 / 关于 / 退出 |
+| **右键** | 菜单：说句话 / 三种形态 / 放大缩小 / 打盹 / 总在最前 / 关于 / 退出 |
+| **右键 → 放大 / 缩小** | 1×–3× 整数缩放（Tk 原位放大，像素不糊），选择会被记住 |
 | **闲置 4–9 秒** | 随机眨眼，面罩光带或眼缝会暗一下 |
 | **闲置 5 分钟** | 打瞌睡，点一下就叫醒 |
 | **移动后** | 位置和形态写进配置，下次启动还在原地 |
@@ -43,6 +44,17 @@ cd ramattra-desktop-pet
 ```
 
 然后**双击 `run.vbs`**（无控制台闪窗）或 `run.bat`。
+
+### 想让它常驻？双击 `install-to-pc.bat`
+
+一键装到当前用户（**不需要管理员**）：
+
+- 复制到 `%LOCALAPPDATA%\Programs\RamattraPet\app`
+- 自动找一个带 tkinter 的 Python 3.10+（本机已有便携运行时就直接用）
+- 在**桌面**和**开机启动**各建一个快捷方式
+- 顺手启动宠物
+
+不想装到别处、只想直接跑，用 `run.bat` 就行。
 
 也可以：
 
@@ -80,6 +92,7 @@ Windows 把它当作 layered window 的颜色键
 ```
 ramattra-desktop-pet/
 ├─ run.vbs / run.bat        双击启动（vbs 走 pythonw，无黑窗）
+├─ install-to-pc.bat        一键安装：复制 + 找 Python + 建桌面/开机快捷方式
 ├─ ramattra_pet/
 │  ├─ __main__.py           命令行入口：--reset --form --selftest --snapshot --say
 │  ├─ app.py                窗口、拖拽、动画时钟、菜单、状态机
@@ -91,9 +104,11 @@ ramattra-desktop-pet/
 ├─ tools/
 │  ├─ art.py                像素画定义（Pillow 绘制，调色板 + 三形态）
 │  ├─ gen_sprites.py        生成 assets/ 与预览拼图
+│  ├─ install.ps1           安装逻辑（找 Python / 复制 / 建快捷方式）
+│  ├─ make-shortcuts.ps1    单独建快捷方式（可复用）
 │  └─ mock_desktop.py       生成 README 用的合成效果图
 ├─ docs/                    README 用的效果图 + 开发记录
-├─ tests/                   22 个单元测试
+├─ tests/                   25 个单元测试
 └─ .github/workflows/ci.yml Windows 矩阵构建：跑测试 + 重新生成精灵 + 启动自检
 ```
 
@@ -105,7 +120,7 @@ ramattra-desktop-pet/
 ## 开发
 
 ```bash
-python -m unittest discover -s tests -t . -v   # 22 个测试
+python -m unittest discover -s tests -t . -v   # 25 个测试
 python tools/gen_sprites.py                    # 重新烘焙全部精灵帧
 python -m ramattra_pet --selftest              # 加载全部素材并开窗自检
 python -m ramattra_pet --form special --say "九次日出" --snapshot shot.png
@@ -123,7 +138,7 @@ python -m ramattra_pet --form special --say "九次日出" --snapshot shot.png
 ## 已知限制 / Roadmap
 
 - **仅 Windows**。透明色键是 Win32 layered window 的特性；macOS / Linux 需要另写窗口层（欢迎 PR）。
-- 精灵是 3 倍固定缩放，高分屏下不能用滚轮调大小。
+- 缩放是整数倍（1×/2×/3×），没有"1.5 倍"这种半档；每台显示器的 DPI 建议值还没自动判断。
 - 没有音效（不想在仓库里塞版权音频）。
 - 全局热键（比如 `Ctrl+Alt+R` 召唤）需要 `RegisterHotKey`，还没做。
 - 特殊形态的猫只有眨眼反应，还没有"被戳烦了跑掉"的动画。

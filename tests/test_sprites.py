@@ -89,6 +89,13 @@ class TkFrameTests(unittest.TestCase):
         with self.assertRaises(KeyError):
             SpriteLibrary(master=self.root).frames("nope")
 
+    def test_zoom_scales_frames_and_reported_size(self) -> None:
+        lib = SpriteLibrary(master=self.root)
+        base = lib.frames("omnic_idle", 1)[0]
+        doubled = lib.frames("omnic_idle", 2)[0]
+        self.assertEqual((doubled.width(), doubled.height()), (base.width() * 2, base.height() * 2))
+        self.assertEqual(lib.size("omnic_idle", 2), (base.width() * 2, base.height() * 2))
+
 
 if __name__ == "__main__":
     unittest.main()

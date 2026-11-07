@@ -28,6 +28,10 @@ class ConfigTests(unittest.TestCase):
         for form in ("omnic", "nemesis", "special"):
             self.assertEqual(config.Config(form=form).normalised().form, form)
 
+    def test_zoom_is_clamped(self) -> None:
+        self.assertEqual(config.Config(zoom=9).normalised().zoom, 3)
+        self.assertEqual(config.Config(zoom=0).normalised().zoom, 1)
+
     def test_roundtrip(self) -> None:
         with temp_dir() as tmp:
             path = tmp / "config.json"
@@ -49,6 +53,14 @@ class ConfigTests(unittest.TestCase):
             path = tmp / "config.json"
             path.write_text(json.dumps({"form": "nemesis", "nonsense": 1}), encoding="utf-8")
             self.assertEqual(config.load(path).form, "nemesis")
+
+    def test_utf8_bom_is_tolerated(self) -> None:
+        """Notepad and PowerShell 5.1 write a BOM; that must not reset the pet."""
+        with temp_dir() as tmp:
+            path = tmp / "config.json"
+            path.write_text(json.dumps({"x": 7, "zoom": 3}), encoding="utf-8-sig")
+            cfg = config.load(path)
+            self.assertEqual((cfg.x, cfg.zoom), (7, 3))
 
     def test_save_is_atomic_and_leaves_no_temp(self) -> None:
         with temp_dir() as tmp:

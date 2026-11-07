@@ -52,7 +52,8 @@ class Config:
 
     x: int | None = None
     y: int | None = None
-    form: str = "omnic"            # "omnic" | "nemesis"
+    form: str = "omnic"            # "omnic" | "nemesis" | "special"
+    zoom: int = 1                  # 1..3, multiplies the baked 3x sprite
     topmost: bool = True
     muted: bool = False
     idle_sleep_seconds: int = 300   # nap after five quiet minutes
@@ -66,6 +67,7 @@ class Config:
     def normalised(self) -> "Config":
         if self.form not in ("omnic", "nemesis", "special"):
             self.form = "omnic"
+        self.zoom = max(1, min(3, int(self.zoom)))
         self.idle_sleep_seconds = max(30, int(self.idle_sleep_seconds))
         self.idle_talk_min = max(10, int(self.idle_talk_min))
         self.idle_talk_max = max(self.idle_talk_min + 5, int(self.idle_talk_max))
@@ -81,7 +83,9 @@ def load(path: Path | None = None) -> Config:
     candidates = [path] if path else [d / FILE_NAME for d in candidate_dirs()]
     for candidate in candidates:
         try:
-            raw = json.loads(Path(candidate).read_text(encoding="utf-8"))
+            # utf-8-sig: editors such as Notepad may add a BOM, and a plain
+            # utf-8 read would then fail json parsing and silently reset the pet.
+            raw = json.loads(Path(candidate).read_text(encoding="utf-8-sig"))
         except (OSError, ValueError):
             continue
         if not isinstance(raw, dict):
