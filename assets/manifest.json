@@ -1,0 +1,192 @@
+{
+  "omnic_idle": {
+    "dir": "omnic",
+    "frames": [
+      "omnic_idle_0.png",
+      "omnic_idle_1.png",
+      "omnic_idle_2.png",
+      "omnic_idle_3.png",
+      "omnic_idle_4.png",
+      "omnic_idle_5.png",
+      "omnic_idle_6.png",
+      "omnic_idle_7.png"
+    ],
+    "size": [
+      174,
+      228
+    ],
+    "scale": 3
+  },
+  "omnic_blink": {
+    "dir": "omnic",
+    "frames": [
+      "omnic_blink_0.png",
+      "omnic_blink_1.png"
+    ],
+    "size": [
+      174,
+      228
+    ],
+    "scale": 3
+  },
+  "omnic_cast": {
+    "dir": "omnic",
+    "frames": [
+      "omnic_cast_0.png",
+      "omnic_cast_1.png",
+      "omnic_cast_2.png",
+      "omnic_cast_3.png",
+      "omnic_cast_4.png"
+    ],
+    "size": [
+      174,
+      228
+    ],
+    "scale": 3
+  },
+  "omnic_sleep": {
+    "dir": "omnic",
+    "frames": [
+      "omnic_sleep_0.png",
+      "omnic_sleep_1.png",
+      "omnic_sleep_2.png",
+      "omnic_sleep_3.png"
+    ],
+    "size": [
+      174,
+      228
+    ],
+    "scale": 3
+  },
+  "nemesis_idle": {
+    "dir": "nemesis",
+    "frames": [
+      "nemesis_idle_0.png",
+      "nemesis_idle_1.png",
+      "nemesis_idle_2.png",
+      "nemesis_idle_3.png",
+      "nemesis_idle_4.png",
+      "nemesis_idle_5.png",
+      "nemesis_idle_6.png",
+      "nemesis_idle_7.png"
+    ],
+    "size": [
+      228,
+      234
+    ],
+    "scale": 3
+  },
+  "nemesis_blink": {
+    "dir": "nemesis",
+    "frames": [
+      "nemesis_blink_0.png",
+      "nemesis_blink_1.png"
+    ],
+    "size": [
+      228,
+      234
+    ],
+    "scale": 3
+  },
+  "nemesis_roar": {
+    "dir": "nemesis",
+    "frames": [
+      "nemesis_roar_0.png",
+      "nemesis_roar_1.png",
+      "nemesis_roar_2.png",
+      "nemesis_roar_3.png",
+      "nemesis_roar_4.png"
+    ],
+    "size": [
+      228,
+      234
+    ],
+    "scale": 3
+  },
+  "nemesis_sleep": {
+    "dir": "nemesis",
+    "frames": [
+      "nemesis_sleep_0.png",
+      "nemesis_sleep_1.png",
+      "nemesis_sleep_2.png",
+      "nemesis_sleep_3.png"
+    ],
+    "size": [
+      228,
+      234
+    ],
+    "scale": 3
+  },
+  "special_idle": {
+    "dir": "special",
+    "frames": [
+      "special_idle_0.png",
+      "special_idle_1.png",
+      "special_idle_2.png",
+      "special_idle_3.png",
+      "special_idle_4.png",
+      "special_idle_5.png",
+      "special_idle_6.png",
+      "special_idle_7.png"
+    ],
+    "size": [
+      288,
+      264
+    ],
+    "scale": 3
+  },
+  "special_blink": {
+    "dir": "special",
+    "frames": [
+      "special_blink_0.png",
+      "special_blink_1.png"
+    ],
+    "size": [
+      288,
+      264
+    ],
+    "scale": 3
+  },
+  "special_aura": {
+    "dir": "special",
+    "frames": [
+      "special_aura_0.png",
+      "special_aura_1.png",
+      "special_aura_2.png",
+      "special_aura_3.png",
+      "special_aura_4.png"
+    ],
+    "size": [
+      288,
+      264
+    ],
+    "scale": 3
+  },
+  "special_cat": {
+    "dir": "special",
+    "frames": [
+      "special_cat_0.png",
+      "special_cat_1.png",
+      "special_cat_2.png"
+    ],
+    "size": [
+      288,
+      264
+    ],
+    "scale": 3
+  },
+  "special_sleep": {
+    "dir": "special",
+    "frames": [
+      "special_sleep_0.png",
+      "special_sleep_1.png",
+      "special_sleep_2.png",
+      "special_sleep_3.png"
+    ],
+    "size": [
+      288,
+      264
+    ],
+    "scale": 3
+  }
+}
