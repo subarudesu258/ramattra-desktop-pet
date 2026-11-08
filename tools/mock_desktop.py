@@ -157,8 +157,8 @@ def forms(out: Path) -> Path:
     canvas = wallpaper(W, H).convert("RGBA")
     d = ImageDraw.Draw(canvas)
     pair = [
-        ("omnic/omnic_idle_2.png", "Omnic", "杖 · 紫光面罩 · 说教", 1.1),
-        ("nemesis/nemesis_idle_2.png", "Nemesis", "巨拳 · 红色核心 · 没耐心", 1.1),
+        ("omnic/omnic_idle_2.png", "Omnic", "权杖 · 米色兜帽 · 说教", 1.1),
+        ("nemesis/nemesis_idle_2.png", "Nemesis", "青铜护肩 · 紫宝石 · 没耐心", 1.1),
         ("special/special_idle_2.png", "特殊形态", "九点面具 · 两只猫 · 节日", 0.92),
     ]
     slot = W // 3

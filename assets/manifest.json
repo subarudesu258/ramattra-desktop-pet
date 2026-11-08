@@ -12,8 +12,8 @@
       "omnic_idle_7.png"
     ],
     "size": [
-      174,
-      228
+      180,
+      240
     ],
     "scale": 3
   },
@@ -24,8 +24,8 @@
       "omnic_blink_1.png"
     ],
     "size": [
-      174,
-      228
+      180,
+      240
     ],
     "scale": 3
   },
@@ -39,8 +39,8 @@
       "omnic_cast_4.png"
     ],
     "size": [
-      174,
-      228
+      180,
+      240
     ],
     "scale": 3
   },
@@ -53,8 +53,8 @@
       "omnic_sleep_3.png"
     ],
     "size": [
-      174,
-      228
+      180,
+      240
     ],
     "scale": 3
   },
@@ -71,7 +71,7 @@
       "nemesis_idle_7.png"
     ],
     "size": [
-      228,
+      252,
       234
     ],
     "scale": 3
@@ -83,7 +83,7 @@
       "nemesis_blink_1.png"
     ],
     "size": [
-      228,
+      252,
       234
     ],
     "scale": 3
@@ -98,7 +98,7 @@
       "nemesis_roar_4.png"
     ],
     "size": [
-      228,
+      252,
       234
     ],
     "scale": 3
@@ -112,7 +112,7 @@
       "nemesis_sleep_3.png"
     ],
     "size": [
-      228,
+      252,
       234
     ],
     "scale": 3

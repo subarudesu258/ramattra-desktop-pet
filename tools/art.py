@@ -49,6 +49,8 @@ PALETTE = {
     "H": (40, 36, 50),        # mane, mid
     "q": (68, 28, 132),       # violet, deep (special)
     "Q": (138, 82, 236),      # violet, glow (special)
+    "c": (52, 40, 32),        # leather, shadow (combat forms)
+    "C": (80, 62, 46),        # leather, mid
 }
 
 
@@ -69,10 +71,66 @@ def poly(d: ImageDraw.ImageDraw, pts, fill, outline=(6, 5, 10)) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Omnic form — staff, robe, violet visor
+# Shared parts of the two combat forms
 # ---------------------------------------------------------------------------
 
-OMNIC_W, OMNIC_H = 58, 76
+MASK_H = 16
+
+
+def draw_mask(d: ImageDraw.ImageDraw, C: int, top: int, eye_off: bool = False) -> None:
+    """The white kitsune faceplate: nine red marks above a violet jaw."""
+    p = PALETTE
+    d.polygon(
+        [(C - 7, top + 2), (C - 5, top), (C + 5, top), (C + 7, top + 2),
+         (C + 7, top + 10), (C + 3, top + MASK_H), (C - 3, top + MASK_H), (C - 7, top + 10)],
+        fill=p["W"], outline=p["k"],
+    )
+    d.line((C - 4, top + 1, C + 3, top + 1), fill=(255, 253, 248))
+    d.line((C - 6, top + 3, C - 6, top + 9), fill=p["i"])
+    # violet jaw
+    d.polygon([(C - 4, top + 11), (C + 4, top + 11), (C + 2, top + MASK_H), (C - 2, top + MASK_H)],
+              fill=p["q"])
+    d.line((C - 3, top + 12, C + 3, top + 12), fill=p["Q"])
+    # nine red marks, 3 x 3, with air between them
+    for gy in (top + 3, top + 6, top + 9):
+        for gx in (C - 4, C, C + 4):
+            if eye_off:
+                d.point((gx, gy + 1), fill=(104, 80, 86))
+            else:
+                d.rectangle((gx - 1, gy, gx, gy + 1), fill=p["O"])
+                d.point((gx - 1, gy), fill=p["F"])
+
+
+def draw_mane(d: ImageDraw.ImageDraw, C: int, top: int, spread: int, bottom: int) -> None:
+    """Black hair fanning out behind the head, with loose strands at the tips."""
+    p = PALETTE
+    d.polygon(
+        [(C - spread + 3, top + 10), (C - spread + 8, top + 2), (C + spread - 8, top + 2),
+         (C + spread - 3, top + 10), (C + spread + 3, bottom), (C + spread - 6, bottom - 7),
+         (C + 4, bottom - 3), (C - 4, bottom - 3), (C - spread + 6, bottom - 7),
+         (C - spread - 3, bottom)],
+        fill=p["h"], outline=p["k"],
+    )
+    d.polygon([(C - spread + 9, top + 4), (C + spread - 9, top + 4),
+               (C + spread - 14, top + 14), (C - spread + 14, top + 14)], fill=p["H"])
+    for i, sx in enumerate((C - spread + 7, C - spread // 2, C, C + spread // 2, C + spread - 7)):
+        drop = 5 + (i % 3) * 3
+        d.polygon([(sx - 1, bottom - 10), (sx + 1, bottom - 10), (sx, bottom - 10 + drop)],
+                  fill=p["h"], outline=p["k"])
+
+
+def draw_glow_line(d: ImageDraw.ImageDraw, pts, glow: float) -> None:
+    p = PALETTE
+    P = lambda k: _shade(p[k], glow)  # noqa: E731
+    d.line(pts, fill=p["k"], width=3)
+    d.line(pts, fill=P("Q"), width=1)
+
+
+# ---------------------------------------------------------------------------
+# Form 1 — the monk: staff, cowl, scarf, tabard
+# ---------------------------------------------------------------------------
+
+OMNIC_W, OMNIC_H = 60, 80
 
 
 def draw_omnic(glow: float = 1.0, bob: int = 0, eye_off: bool = False, cast: int = 0) -> Image.Image:
@@ -82,129 +140,89 @@ def draw_omnic(glow: float = 1.0, bob: int = 0, eye_off: bool = False, cast: int
     y = bob
     C = 30
 
+    # ---- torso + robe ----------------------------------------------------
+    d.polygon([(C - 9, 36 + y), (C + 9, 36 + y), (C + 8, 58 + y), (C - 8, 58 + y)],
+              fill=p["c"], outline=p["k"])
+    d.polygon([(C - 8, 37 + y), (C - 1, 37 + y), (C - 1, 57 + y), (C - 7, 57 + y)], fill=p["C"])
+    d.polygon([(C + 5, 37 + y), (C + 8, 37 + y), (C + 8, 57 + y), (C + 5, 57 + y)], fill=p["r"])
+    d.line((C - 7, 40 + y, C + 7, 40 + y), fill=p["B"])
+    d.line((C - 7, 47 + y, C + 7, 47 + y), fill=p["b"])
+
+    d.polygon([(C - 11, 54 + y), (C + 11, 54 + y), (C + 14, 80), (C - 14, 80)], fill=p["r"], outline=p["k"])
+    d.polygon([(C - 6, 55 + y), (C + 6, 55 + y), (C + 8, 80), (C - 8, 80)], fill=p["T"], outline=p["k"])
+    d.line((C - 4, 57 + y, C - 5, 79), fill=p["U"])
+    d.line((C + 4, 57 + y, C + 5, 79), fill=p["t"])
+    d.line((C - 6, 56 + y, C + 6, 56 + y), fill=p["B"])
+    d.polygon([(C, 59 + y), (C + 3, 62 + y), (C, 65 + y), (C - 3, 62 + y)], fill=p["k"])
+    d.polygon([(C, 60 + y), (C + 2, 62 + y), (C, 64 + y), (C - 2, 62 + y)], fill=P("Q"))
+
+    # ---- hair behind the cowl -------------------------------------------
+    draw_mane(d, C, 6 + y, 18, 38 + y)
+
     # ---- staff -----------------------------------------------------------
-    sx = 12
-    d.rectangle((sx - 1, 14 + y, sx + 2, 73), fill=p["k"])
-    d.rectangle((sx, 14 + y, sx + 1, 72), fill=p["b"])
-    d.line((sx, 16 + y, sx, 71), fill=p["B"])
-    # prongs
-    d.line((sx, 14 + y, sx - 3, 10 + y), fill=p["k"])
-    d.line((sx + 1, 14 + y, sx + 4, 10 + y), fill=p["k"])
-    d.line((sx, 14 + y, sx - 2, 11 + y), fill=p["B"])
-    d.line((sx + 1, 14 + y, sx + 3, 11 + y), fill=p["B"])
-    # orb
-    ox, oy, orad = sx, 10 + y, 5
-    d.ellipse((ox - orad, oy - orad, ox + orad, oy + orad), fill=p["k"])
-    d.ellipse((ox - orad + 1, oy - orad + 1, ox + orad - 1, oy + orad - 1), fill=P("v"))
-    d.ellipse((ox - orad + 2, oy - orad + 2, ox + orad - 2, oy + orad - 2), fill=P("V"))
-    d.ellipse((ox - 2, oy - 2, ox + 2, oy + 2), fill=P("w"))
-    if glow > 0.9:
-        d.point((ox - 1, oy - 1), fill=P("e"))
+    sx = 9
+    d.rectangle((sx - 1, 16 + y, sx + 2, 79), fill=p["k"])
+    d.rectangle((sx, 16 + y, sx + 1, 78), fill=p["b"])
+    d.line((sx, 18 + y, sx, 77), fill=p["B"])
+    ox, oy = sx + 3, 12 + y
+    d.ellipse((ox - 7, oy - 7, ox + 7, oy + 7), outline=p["k"])
+    d.ellipse((ox - 6, oy - 6, ox + 6, oy + 6), outline=p["B"])
+    d.line((sx, 16 + y, ox - 4, oy + 5), fill=p["B"])
+    d.line((sx + 1, 16 + y, ox + 4, oy + 5), fill=p["b"])
+    d.ellipse((ox - 4, oy - 4, ox + 4, oy + 4), fill=p["k"])
+    d.ellipse((ox - 3, oy - 3, ox + 3, oy + 3), fill=P("q"))
+    d.ellipse((ox - 2, oy - 2, ox + 2, oy + 2), fill=P("Q"))
+    d.ellipse((ox - 1, oy - 1, ox + 1, oy + 1), fill=P("w"))
     if cast:
-        rad = orad + 2 + cast * 2
-        d.ellipse((ox - rad, oy - rad, ox + rad, oy + rad), outline=P("V"))
-        d.ellipse((ox - rad + 1, oy - rad + 1, ox + rad - 1, oy + rad - 1), outline=P("v"))
+        rad = min(13, 8 + cast * 2)
+        d.ellipse((ox - rad, oy - rad, ox + rad, oy + rad), outline=P("q"))
+        d.ellipse((ox - rad + 1, oy - rad + 1, ox + rad - 1, oy + rad - 1), outline=P("Q"))
         for dx, dy in ((rad + 1, 0), (-rad - 1, 0), (0, rad + 1), (0, -rad - 1)):
             d.point((ox + dx, oy + dy), fill=P("w"))
 
-    # ---- robe ------------------------------------------------------------
-    robe = [(C - 8, 44 + y), (C + 8, 44 + y), (C + 12, 57 + y), (C + 15, 73),
-            (C - 15, 73), (C - 12, 57 + y)]
-    poly(d, robe, p["R"])
-    d.polygon([(C - 8, 45 + y), (C - 2, 45 + y), (C - 4, 72), (C - 14, 72)], fill=p["L"])
-    d.polygon([(C + 4, 45 + y), (C + 8, 45 + y), (C + 11, 57 + y), (C + 13, 72), (C + 4, 72)], fill=p["r"])
-    for fx in (C - 11, C - 6, C + 6, C + 11):
-        d.line((fx, 52 + y, fx + (-1 if fx < C else 1), 71), fill=p["r"])
-    # sash
-    d.rectangle((C - 3, 44 + y, C + 3, 73), fill=p["k"])
-    d.rectangle((C - 2, 45 + y, C + 2, 72), fill=P("v"))
-    d.rectangle((C - 1, 45 + y, C + 1, 72), fill=P("V"))
-    d.line((C, 45 + y, C, 72), fill=P("w"))
-    # hem
-    d.rectangle((C - 15, 71, C + 15, 73), fill=p["k"])
-    d.line((C - 14, 71, C + 14, 71), fill=p["B"])
-    for hx in range(C - 12, C + 13, 4):
-        d.point((hx, 70), fill=P("v"))
-
-    # ---- shoulders (drawn before the torso so they tuck in) --------------
-    for side in (-1, 1):
-        x = C + side * 8
-        poly(d, [(x, 27 + y), (x + side * 10, 29 + y), (x + side * 12, 38 + y), (x + side * 1, 37 + y)], p["M"])
-        d.polygon(
-            [(x + side * 2, 28 + y), (x + side * 9, 30 + y), (x + side * 9, 33 + y), (x + side * 2, 32 + y)],
-            fill=p["N"] if side < 0 else p["m"],
-        )
-
-    # ---- torso -----------------------------------------------------------
-    poly(d, [(C - 9, 28 + y), (C + 9, 28 + y), (C + 8, 46 + y), (C - 8, 46 + y)], p["M"])
-    d.polygon([(C - 7, 30 + y), (C - 1, 30 + y), (C - 2, 45 + y), (C - 6, 45 + y)], fill=p["N"])
-    d.polygon([(C + 4, 30 + y), (C + 7, 30 + y), (C + 6, 45 + y), (C + 3, 45 + y)], fill=p["m"])
-    d.rectangle((C - 8, 42 + y, C + 8, 45 + y), fill=p["k"])
-    d.rectangle((C - 6, 43 + y, C + 6, 44 + y), fill=p["b"])
-    d.polygon([(C, 31 + y), (C + 4, 35 + y), (C, 39 + y), (C - 4, 35 + y)], fill=p["k"])
-    d.polygon([(C, 32 + y), (C + 3, 35 + y), (C, 38 + y), (C - 3, 35 + y)], fill=P("v"))
-    d.polygon([(C, 34 + y), (C + 1, 35 + y), (C, 36 + y), (C - 1, 35 + y)], fill=P("e"))
-
     # ---- arms ------------------------------------------------------------
-    # screen-left arm reaches down to grip the staff
-    poly(d, [(C - 19, 33 + y), (C - 11, 32 + y), (C - 11, 43 + y), (C - 19, 44 + y)], p["M"])
-    d.line((C - 18, 34 + y, C - 18, 42 + y), fill=p["N"])
-    poly(d, [(C - 20, 42 + y), (C - 10, 41 + y), (C - 10, 47 + y), (C - 20, 48 + y)], p["m"])
-    d.line((C - 19, 45 + y, C - 11, 45 + y), fill=P("v"))
-    # screen-right arm hangs
-    poly(d, [(C + 11, 32 + y), (C + 19, 33 + y), (C + 19, 46 + y), (C + 11, 45 + y)], p["m"])
-    d.line((C + 15, 34 + y, C + 15, 44 + y), fill=p["M"])
-    poly(d, [(C + 11, 45 + y), (C + 20, 46 + y), (C + 20, 52 + y), (C + 11, 51 + y)], p["m"])
-    d.line((C + 12, 47 + y, C + 19, 48 + y), fill=P("v"))
-    # gripping hand wraps the shaft so the staff reads as held, not floating
-    poly(d, [(sx - 4, 43 + y), (sx + 6, 43 + y), (sx + 6, 49 + y), (sx - 4, 49 + y)], p["M"])
-    d.line((sx - 3, 44 + y, sx - 3, 48 + y), fill=p["N"])
-    d.line((sx - 3, 46 + y, sx + 5, 46 + y), fill=p["m"])
+    # screen-left arm reaches the staff
+    d.polygon([(C - 9, 37 + y), (C - 15, 41 + y), (C - 18, 49 + y), (C - 12, 50 + y)],
+              fill=p["c"], outline=p["k"])
+    d.line((C - 13, 42 + y, C - 15, 48 + y), fill=p["C"])
+    d.rounded_rectangle((C - 23, 46 + y, C - 12, 53 + y), radius=2, fill=p["T"], outline=p["k"])
+    d.line((C - 22, 49 + y, C - 13, 49 + y), fill=p["U"])
+    # screen-right arm hangs, violet claw
+    d.polygon([(C + 9, 37 + y), (C + 15, 42 + y), (C + 16, 52 + y), (C + 9, 51 + y)],
+              fill=p["c"], outline=p["k"])
+    d.line((C + 12, 38 + y, C + 12, 50 + y), fill=p["C"])
+    d.rounded_rectangle((C + 9, 51 + y, C + 17, 58 + y), radius=2, fill=p["q"], outline=p["k"])
+    for kx in (C + 10, C + 12, C + 14):
+        d.line((kx, 54 + y, kx, 57 + y), fill=P("Q"))
+    d.point((C + 12, 52 + y), fill=P("w"))
 
-    # ---- collar ----------------------------------------------------------
-    poly(d, [(C - 12, 23 + y), (C + 12, 23 + y), (C + 9, 29 + y), (C - 9, 29 + y)], p["b"])
-    d.polygon([(C - 10, 24 + y), (C + 10, 24 + y), (C + 9, 26 + y), (C - 9, 26 + y)], fill=p["B"])
-    for tip in (-1, 1):
-        d.polygon([(C + tip * 12, 23 + y), (C + tip * 15, 21 + y), (C + tip * 11, 26 + y)], fill=p["b"], outline=p["k"])
+    # ---- scarf -----------------------------------------------------------
+    d.polygon([(C - 10, 36 + y), (C + 10, 36 + y), (C + 8, 44 + y), (C - 8, 44 + y)],
+              fill=p["I"], outline=p["k"])
+    d.polygon([(C - 9, 37 + y), (C + 9, 37 + y), (C + 8, 40 + y), (C - 8, 40 + y)], fill=p["W"])
+    d.polygon([(C + 6, 42 + y), (C + 11, 43 + y), (C + 13, 66 + y), (C + 8, 64 + y)],
+              fill=p["i"], outline=p["k"])
+    d.polygon([(C + 8, 44 + y), (C + 11, 45 + y), (C + 12, 62 + y), (C + 9, 61 + y)], fill=p["W"])
 
-    # ---- head ------------------------------------------------------------
-    head = [(C - 8, 6 + y), (C + 8, 6 + y), (C + 9, 10 + y), (C + 9, 21 + y),
-            (C + 6, 24 + y), (C - 6, 24 + y), (C - 9, 21 + y), (C - 9, 10 + y)]
-    poly(d, head, p["M"])
-    d.polygon([(C - 7, 7 + y), (C + 7, 7 + y), (C + 8, 9 + y), (C + 1, 10 + y), (C - 8, 9 + y)], fill=p["N"])
-    # crest fin
-    poly(d, [(C - 3, 6 + y), (C + 3, 6 + y), (C + 2, 1 + y), (C - 2, 1 + y)], p["M"])
-    d.line((C, 2 + y, C, 6 + y), fill=p["N"])
-    # face recess
-    d.rounded_rectangle((C - 7, 10 + y, C + 7, 22 + y), radius=3, fill=p["x"])
-    d.line((C - 7, 11 + y, C + 7, 11 + y), fill=p["m"])
+    # ---- cowl ------------------------------------------------------------
+    d.polygon([(C - 10, 22 + y), (C - 8, 13 + y), (C - 4, 9 + y), (C + 4, 9 + y),
+               (C + 8, 13 + y), (C + 10, 22 + y), (C + 11, 32 + y), (C + 6, 36 + y),
+               (C - 6, 36 + y), (C - 11, 32 + y)], fill=p["I"], outline=p["k"])
+    d.polygon([(C - 7, 14 + y), (C - 3, 11 + y), (C + 3, 11 + y), (C + 7, 14 + y),
+               (C + 7, 24 + y), (C - 7, 24 + y)], fill=p["i"])
+    d.line((C - 10, 24 + y, C - 5, 34 + y), fill=p["W"])
+    d.line((C + 10, 24 + y, C + 5, 34 + y), fill=p["t"])
 
-    # visor: one narrow band, brighter cores in the middle
-    if eye_off:
-        d.rectangle((C - 6, 14 + y, C + 6, 15 + y), fill=(17, 14, 23))
-        d.line((C - 6, 16 + y, C + 6, 16 + y), fill=p["k"])
-    else:
-        d.rectangle((C - 6, 13 + y, C + 6, 15 + y), fill=p["k"])
-        d.rectangle((C - 5, 14 + y, C + 5, 14 + y), fill=P("V"))
-        d.line((C - 4, 14 + y, C + 4, 14 + y), fill=P("w"))
-        d.point((C - 2, 14 + y), fill=P("e"))
-        d.point((C + 2, 14 + y), fill=P("e"))
-        d.line((C - 4, 16 + y, C + 4, 16 + y), fill=P("v"))
-    # mouth vent: a single dark slot, not a row of teeth
-    d.rectangle((C - 5, 18 + y, C + 5, 20 + y), fill=(14, 12, 19))
-    d.line((C - 4, 19 + y, C + 4, 19 + y), fill=p["m"])
-    # side vents
-    for side in (-1, 1):
-        d.line((C + side * 8, 12 + y, C + side * 7, 22 + y), fill=p["N"])
+    draw_mask(d, C, 12 + y, eye_off=eye_off)
 
     return img
 
 
 # ---------------------------------------------------------------------------
-# Nemesis form — bulk, spikes, red core
+# Form 2 — the bulwark: bronze pauldrons, gem, fists
 # ---------------------------------------------------------------------------
 
-NEMESIS_W, NEMESIS_H = 76, 78
+NEMESIS_W, NEMESIS_H = 84, 78
 
 
 def draw_nemesis(glow: float = 1.0, bob: int = 0, eye_off: bool = False, roar: int = 0) -> Image.Image:
@@ -212,97 +230,83 @@ def draw_nemesis(glow: float = 1.0, bob: int = 0, eye_off: bool = False, roar: i
     p = PALETTE
     P = lambda k: _shade(p[k], glow)  # noqa: E731
     y = bob
-    C = 38
+    C = 42
 
     # ---- legs ------------------------------------------------------------
-    for lx in (C - 9, C + 1):
-        poly(d, [(lx, 56), (lx + 8, 56), (lx + 9, 74), (lx - 1, 74)], p["r"])
-        d.line((lx + 2, 58, lx + 2, 73), fill=p["L"])
-        d.rectangle((lx - 2, 72, lx + 10, 74), fill=p["k"])
-        d.line((lx - 1, 72, lx + 9, 72), fill=p["b"])
+    for lx in (C - 12, C + 4):
+        d.polygon([(lx, 54), (lx + 9, 54), (lx + 9, 77), (lx, 77)], fill=p["c"], outline=p["k"])
+        d.line((lx + 2, 56, lx + 2, 76), fill=p["C"])
+        d.rectangle((lx - 1, 74, lx + 10, 77), fill=p["k"])
+        d.line((lx, 74, lx + 9, 74), fill=p["B"])
+
+    draw_mane(d, C, 6 + y, 15, 34 + y)
 
     # ---- torso -----------------------------------------------------------
-    poly(d, [(C - 13, 30 + y), (C + 13, 30 + y), (C + 14, 58 + y), (C - 14, 58 + y)], p["R"])
-    d.polygon([(C - 11, 31 + y), (C + 1, 31 + y), (C + 1, 57 + y), (C - 12, 57 + y)], fill=p["L"])
-    d.polygon([(C + 6, 31 + y), (C + 11, 31 + y), (C + 12, 57 + y), (C + 7, 57 + y)], fill=p["r"])
-    # chest plate
-    poly(d, [(C - 7, 32 + y), (C + 7, 32 + y), (C + 5, 46 + y), (C - 5, 46 + y)], p["m"])
-    # core
-    d.ellipse((C - 4, 35 + y, C + 4, 43 + y), fill=p["k"])
-    d.ellipse((C - 3, 36 + y, C + 3, 42 + y), fill=P("o"))
-    d.ellipse((C - 2, 37 + y, C + 2, 41 + y), fill=P("F"))
-    if glow > 0.9:
-        d.point((C, 39 + y), fill=P("y"))
-    # glowing cracks
-    for pts in (
-        [(C - 11, 37), (C - 9, 42), (C - 12, 47), (C - 8, 53)],
-        [(C + 10, 34), (C + 12, 39), (C + 10, 44)],
-        [(C - 4, 48), (C - 6, 53), (C - 3, 57)],
-    ):
-        pts = [(px, py + y) for px, py in pts]
-        d.line(pts, fill=p["k"], width=3)
-        d.line(pts, fill=P("o"), width=1)
+    d.polygon([(C - 12, 30 + y), (C + 12, 30 + y), (C + 12, 56 + y), (C - 12, 56 + y)],
+              fill=p["c"], outline=p["k"])
+    d.polygon([(C - 11, 31 + y), (C - 1, 31 + y), (C - 1, 55 + y), (C - 11, 55 + y)], fill=p["C"])
+    d.polygon([(C + 5, 31 + y), (C + 11, 31 + y), (C + 11, 55 + y), (C + 6, 55 + y)], fill=p["r"])
+    d.rectangle((C - 6, 33 + y, C + 6, 49 + y), fill=p["k"])
+    d.rectangle((C - 5, 34 + y, C + 5, 48 + y), fill=p["T"])
+    d.polygon([(C, 36 + y), (C + 4, 40 + y), (C + 4, 43 + y), (C, 47 + y),
+               (C - 4, 43 + y), (C - 4, 40 + y)], fill=p["k"])
+    d.polygon([(C, 37 + y), (C + 3, 40 + y), (C + 3, 42 + y), (C, 46 + y),
+               (C - 3, 42 + y), (C - 3, 40 + y)], fill=P("q"))
+    d.polygon([(C, 39 + y), (C + 1, 41 + y), (C, 43 + y), (C - 1, 41 + y)], fill=P("Q"))
 
-    # ---- shoulders -------------------------------------------------------
+    # ---- pauldrons (top above the chin so the head sits in them) --------
     for side in (-1, 1):
-        inner = C + side * 12
-        outer = C + side * 27
-        poly(d, [(inner, 27 + y), (outer, 31 + y), (outer - side * 1, 46 + y), (inner, 43 + y)], p["m"])
-        d.polygon(
-            [(inner + side * 3, 29 + y), (outer - side * 3, 32 + y),
-             (outer - side * 4, 36 + y), (inner + side * 3, 34 + y)],
-            fill=p["N"] if side < 0 else p["M"],
-        )
-        # chunky armour spikes
-        for bx, by, h in ((side * 17, 28, 8), (side * 22, 29, 10), (side * 26, 31, 7)):
-            px = C + bx
-            tipx = px + side * 2
-            poly(d, [(px - 4, by + y), (tipx, by - h + y), (px + 4, by + y)], p["M"])
-            d.line((px, by + y, tipx, by - h + 1 + y), fill=p["N"])
+        inner, outer = C + side * 10, C + side * 32
+        d.polygon([(inner, 24 + y), (outer - side * 2, 28 + y), (outer, 34 + y),
+                   (outer, 44 + y), (inner, 42 + y)], fill=p["T"], outline=p["k"])
+        d.polygon([(inner + side * 3, 26 + y), (outer - side * 5, 30 + y),
+                   (outer - side * 4, 33 + y), (inner + side * 4, 31 + y)], fill=p["U"])
+        d.line((inner, 24 + y, outer - side * 2, 28 + y), fill=p["B"])
+        d.line((inner, 42 + y, outer, 44 + y), fill=p["t"])
+        draw_glow_line(d, [(C + side * 24, 33 + y), (C + side * 24, 40 + y),
+                           (C + side * 16, 40 + y)], glow)
 
-    # ---- arms & fists (one continuous silhouette, no elbow gap) ----------
+    # ---- arms + fists (one continuous limb under each pauldron) ---------
     for side in (-1, 1):
-        ax = C + side * 20
-        poly(d, [(ax - side * 3, 36 + y), (ax + side * 8, 38 + y),
-                 (ax + side * 9, 56 + y), (ax - side * 3, 55 + y)], p["m"])
-        d.line((ax + side * 3, 39 + y, ax + side * 3, 54 + y), fill=p["N"])
-        # forearm brace
-        poly(d, [(ax - side * 3, 48 + y), (ax + side * 9, 49 + y),
-                 (ax + side * 9, 57 + y), (ax - side * 3, 56 + y)], p["L"])
-        # fist
-        fx0, fx1 = sorted((ax - side * 5, ax + side * 11))
-        d.rounded_rectangle((fx0, 52 + y, fx1, 71 + y), radius=3, fill=p["M"], outline=p["k"])
-        d.line((fx0 + 3, 54 + y, fx0 + 3, 69 + y), fill=p["N"])
-        d.rectangle((fx0 + 2, 60 + y, fx1 - 2, 63 + y), fill=p["k"])
-        d.rectangle((fx0 + 3, 61 + y, fx1 - 3, 62 + y), fill=P("O"))
-        d.line((fx0 + 4, 61 + y, fx1 - 4, 61 + y), fill=P("F"))
+        ax = C + side * 23
+        d.polygon([(ax, 38 + y), (ax + side * 13, 38 + y), (ax + side * 13, 58 + y), (ax, 58 + y)],
+                  fill=p["T"], outline=p["k"])
+        d.line((ax + side * 3, 40 + y, ax + side * 3, 56 + y), fill=p["U"])
+        d.line((ax + side * 9, 40 + y, ax + side * 9, 56 + y), fill=p["t"])
+        fx0, fx1 = sorted((ax - side * 1, ax + side * 14))
+        d.rounded_rectangle((fx0, 54 + y, fx1, 74 + y), radius=3, fill=p["c"], outline=p["k"])
+        d.line((fx0 + 3, 56 + y, fx0 + 3, 72 + y), fill=p["C"])
+        d.line((fx0 + 1, 55 + y, fx1 - 1, 55 + y), fill=p["B"])
+        d.line((fx0 + 2, 60 + y, fx1 - 2, 60 + y), fill=p["t"])
+        d.line((fx0 + 2, 66 + y, fx1 - 2, 66 + y), fill=p["t"])
+        # thumb
+        d.polygon([(fx0 + 1, 58 + y), (fx0 + 4, 60 + y), (fx0 + 1, 63 + y)], fill=p["C"])
 
-    # ---- head ------------------------------------------------------------
-    poly(d, [(C - 7, 15 + y), (C + 7, 15 + y), (C + 8, 31 + y), (C - 8, 31 + y)], p["m"])
-    d.polygon([(C - 5, 16 + y), (C + 2, 16 + y), (C + 2, 30 + y), (C - 6, 30 + y)], fill=p["N"])
-    poly(d, [(C - 6, 20 + y), (C + 6, 20 + y), (C + 5, 26 + y), (C - 5, 26 + y)], p["x"])
-    if eye_off:
-        d.rectangle((C - 5, 22 + y, C + 5, 24 + y), fill=(20, 17, 24))
-    else:
-        d.rectangle((C - 5, 22 + y, C + 5, 24 + y), fill=p["k"])
-        d.line((C - 4, 23 + y, C + 4, 23 + y), fill=P("F"))
-        d.line((C - 3, 24 + y, C + 3, 24 + y), fill=P("O"))
-        d.point((C - 2, 23 + y), fill=P("y"))
-        d.point((C + 2, 23 + y), fill=P("y"))
-    # jaw
-    d.rectangle((C - 4, 27 + y, C + 4, 30 + y), fill=p["r"])
-    d.line((C - 3, 28 + y, C + 3, 28 + y), fill=p["M"])
-    # swept horns
+    # ---- neck joining head and chest ------------------------------------
+    d.polygon([(C - 11, 23 + y), (C + 11, 23 + y), (C + 13, 31 + y), (C - 13, 31 + y)],
+              fill=p["h"], outline=p["k"])
+
+    # ---- hair falls over the shoulders, then the mask --------------------
+    for side in (-1, 1):
+        d.polygon([(C + side * 12, 22 + y), (C + side * 4, 28 + y), (C + side * 11, 34 + y)],
+                  fill=p["h"], outline=p["k"])
+        d.polygon([(C + side * 9, 24 + y), (C + side * 5, 28 + y), (C + side * 8, 32 + y)],
+                  fill=p["H"])
+    draw_mask(d, C, 11 + y, eye_off=eye_off)
     for side in (-1, 1):
         bx = C + side * 7
-        poly(d, [(bx, 18 + y), (bx + side * 5, 14 + y), (bx + side * 1, 22 + y)], p["M"])
+        d.polygon([(bx, 18 + y), (bx + side * 7, 9 + y), (bx + side * 2, 22 + y)],
+                  fill=p["T"], outline=p["k"])
+        d.polygon([(bx + side * 2, 17 + y), (bx + side * 5, 12 + y), (bx + side * 3, 19 + y)],
+                  fill=p["U"])
 
     if roar:
-        rad = 13 + roar * 4
-        d.ellipse((C - rad, 39 + y - rad, C + rad, 39 + y + rad), outline=P("o"))
-        d.ellipse((C - rad + 1, 39 + y - rad + 1, C + rad - 1, 39 + y + rad - 1), outline=P("O"))
+        rad = 18 + roar * 5
+        d.ellipse((C - rad, 40 + y - rad, C + rad, 40 + y + rad), outline=P("q"))
+        d.ellipse((C - rad + 1, 40 + y - rad + 1, C + rad - 1, 40 + y + rad - 1), outline=P("Q"))
         for dx, dy in ((rad + 1, 0), (-rad - 1, 0), (0, rad + 1), (0, -rad - 1)):
-            d.point((C + dx, 39 + y + dy), fill=P("F"))
+            d.point((C + dx, 40 + y + dy), fill=P("w"))
+
     return img
 
 
