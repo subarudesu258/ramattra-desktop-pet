@@ -222,6 +222,7 @@ class PetApp:
         self._loop = True
         self._scale = 3          # sprite upscale, refreshed from the manifest
         self.zoom = max(1, min(3, int(cfg.zoom)))
+        self._signature_pending = True   # first click in a form plays its signature line
         self._hot: str | None = None
         self._last_interaction = time.monotonic()
         self._bubble = SpeechBubble(self.root)
@@ -434,6 +435,12 @@ class PetApp:
             self.say(quotes.pick("special", "cat", self.rng))
             return
         self._play("action", on_end=self._go_idle)
+        sig = quotes.signature(self.form)
+        if self._signature_pending and sig:
+            # e.g. Nemesis: the first click after switching always says "感受，我的痛苦！"
+            self._signature_pending = False
+            self.say(sig)
+            return
         self.say_something("click")
 
     def _on_double_click(self, event: tk.Event) -> None:
@@ -512,6 +519,7 @@ class PetApp:
         was_sleeping = self._sleeping
         self.form = form
         self.cfg.form = form
+        self._signature_pending = True
         self._play("sleep" if was_sleeping else "idle")
         if announce:
             self.say(quotes.pick(form, "transform", self.rng), 2.4)

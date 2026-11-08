@@ -41,6 +41,7 @@ LINES = {
     },
     "nemesis": {
         "click": [
+            "感受，我的痛苦！",
             "别碰。",
             "说重点。",
             "你最好有一个好理由。",
@@ -55,12 +56,13 @@ LINES = {
             "我仍然是我，只是不再客气。",
             "再靠近一点试试。",
         ],
-        "transform": ["既然讲道理没用。", "那就换个说法。"],
+        "transform": ["既然讲道理没用。", "那就换个说法。", "感受，我的痛苦！"],
         "wake": ["谁在吵？", "我醒着。"],
         "sleep": ["别来打扰我。", "三分钟。"],
     },
     "special": {
         "click": [
+            "感受，我的痛苦！",
             "嘘。别吵醒它们。",
             "这套衣服？借来的。",
             "九次日出，九次日落。",
@@ -76,7 +78,7 @@ LINES = {
             "它们俩今天心情不错。",
             "风把围巾吹过来了。",
         ],
-        "transform": ["换个场合，换身衣服。", "节日到了。"],
+        "transform": ["换个场合，换身衣服。", "节日到了。", "感受，我的痛苦！"],
         "wake": ["……我没睡，我在算。", "嗯。"],
         "sleep": ["让它们守着就好。", "我闭一会儿眼。"],
         "cat": [
@@ -91,6 +93,17 @@ LINES = {
 }
 
 GENERIC = ["……", "嗯。"]
+
+# One line that belongs to a form so much that the first click after switching
+# to it always plays it.  Omnic has none: he would rather be listened to.
+SIGNATURES = {
+    "nemesis": "感受，我的痛苦！",
+    "special": "感受，我的痛苦！",
+}
+
+
+def signature(form: str) -> str | None:
+    return SIGNATURES.get(form)
 
 
 def pick(form: str, kind: str, rng: random.Random | None = None) -> str:

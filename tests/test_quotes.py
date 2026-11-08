@@ -37,6 +37,14 @@ class QuoteTests(unittest.TestCase):
         b = quotes.pick("omnic", "idle", random.Random(7))
         self.assertEqual(a, b)
 
+    def test_signature_lines(self) -> None:
+        self.assertEqual(quotes.signature("nemesis"), "感受，我的痛苦！")
+        self.assertEqual(quotes.signature("special"), "感受，我的痛苦！")
+        self.assertIsNone(quotes.signature("omnic"))
+        # the signature also sits in the normal pool, so it keeps coming back
+        self.assertIn("感受，我的痛苦！", quotes.LINES["nemesis"]["click"])
+        self.assertIn("感受，我的痛苦！", quotes.LINES["special"]["click"])
+
     def test_other_form_cycles_through_three(self) -> None:
         self.assertEqual(quotes.other_form("omnic"), "nemesis")
         self.assertEqual(quotes.other_form("nemesis"), "special")
